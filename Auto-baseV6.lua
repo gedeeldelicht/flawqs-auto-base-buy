@@ -1,7 +1,6 @@
 -- Services
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Lighting = game:GetService("Lighting")
@@ -9,64 +8,66 @@ local player = Players.LocalPlayer
 
 -- GUI Setup
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "FlawQsHub_Mobile_V5"
+screenGui.Name = "FlawQsHub_V6_Mobile"
 screenGui.ResetOnSpawn = false
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
--- Delta/Executor Injectie
-local success, err = pcall(function()
-    screenGui.Parent = CoreGui
-end)
-if not success then
-    screenGui.Parent = player:WaitForChild("PlayerGui")
-end
+-- Veilige injectie
+local parent = (RunService:IsStudio() and player.PlayerGui) or CoreGui
+screenGui.Parent = parent
 
--- Toggle Knop (Voor Mobiel)
+-- Toggle Knop
 local toggleBtn = Instance.new("TextButton")
 toggleBtn.Size = UDim2.new(0, 60, 0, 60)
 toggleBtn.Position = UDim2.new(0, 10, 0, 150)
 toggleBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 255)
 toggleBtn.Text = "OPEN"
 toggleBtn.TextColor3 = Color3.new(1, 1, 1)
+toggleBtn.Active = true
 toggleBtn.Draggable = true
 toggleBtn.Parent = screenGui
-local btnCorner = Instance.new("UICorner", toggleBtn)
+Instance.new("UICorner", toggleBtn)
 
 -- Hoofdvenster
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 320, 0, 350)
-frame.Position = UDim2.new(0.5, -160, 0.5, -175)
-frame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
-frame.BorderSizePixel = 0
+frame.Size = UDim2.new(0, 320, 0, 380)
+frame.Position = UDim2.new(0.5, -160, 0.5, -190)
+frame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 frame.Visible = false
 frame.Parent = screenGui
-local frameCorner = Instance.new("UICorner", frame)
+Instance.new("UICorner", frame)
 
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 40)
-title.Text = "FLAWQS HUB V5"
+title.Size = UDim2.new(1, 0, 0, 45)
+title.Text = "FLAWQS HUB V6 (NO-LAG)"
 title.Font = Enum.Font.GothamBold
 title.TextColor3 = Color3.new(1, 1, 1)
 title.BackgroundTransparency = 1
 title.Parent = frame
 
 local scroll = Instance.new("ScrollingFrame")
-scroll.Size = UDim2.new(1, -10, 1, -50)
-scroll.Position = UDim2.new(0, 5, 0, 45)
+scroll.Size = UDim2.new(1, -10, 1, -55)
+scroll.Position = UDim2.new(0, 5, 0, 50)
 scroll.BackgroundTransparency = 1
-scroll.CanvasSize = UDim2.new(0, 0, 6, 0) -- Ruimte voor alle features
-scroll.ScrollBarThickness = 4
+scroll.CanvasSize = UDim2.new(0, 0, 0, 0) -- Automatisch
+scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+scroll.ScrollBarThickness = 2
 scroll.Parent = frame
 
+local layout = Instance.new("UIListLayout", scroll)
+layout.Padding = UDim.new(0, 8)
+layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+-- Toggle Functie
 toggleBtn.MouseButton1Click:Connect(function()
     frame.Visible = not frame.Visible
     toggleBtn.Text = frame.Visible and "CLOSE" or "OPEN"
 end)
 
-local layoutOrder = 0
+-- UI Builders
 local function createButton(name, color, callback)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 290, 0, 40)
-    btn.Position = UDim2.new(0, 5, 0, layoutOrder * 45)
+    btn.Size = UDim2.new(0, 280, 0, 42)
     btn.Text = name
     btn.BackgroundColor3 = color
     btn.TextColor3 = Color3.new(1, 1, 1)
@@ -75,67 +76,63 @@ local function createButton(name, color, callback)
     btn.Parent = scroll
     Instance.new("UICorner", btn)
     btn.MouseButton1Click:Connect(callback)
-    layoutOrder = layoutOrder + 1
 end
 
 local function createHeader(text)
     local l = Instance.new("TextLabel")
-    l.Size = UDim2.new(1, 0, 0, 30)
-    l.Position = UDim2.new(0, 0, 0, layoutOrder * 45)
+    l.Size = UDim2.new(1, 0, 0, 35)
     l.Text = "--- " .. text:upper() .. " ---"
     l.TextColor3 = Color3.fromRGB(150, 0, 255)
     l.BackgroundTransparency = 1
+    l.Font = Enum.Font.GothamBold
     l.Parent = scroll
-    layoutOrder = layoutOrder + 1
 end
 
 --- [ FEATURES ] ---
 
-createHeader("Main Stuff")
-createButton("Execute Auto-Base V5", Color3.fromRGB(255, 0, 100), function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/gedeeldelicht/flawqs-auto-base-buy/refs/heads/main/auto-baseV5.lua"))()
+createHeader("Main Scripts")
+createButton("EXECUTE AUTO-BASE V6", Color3.fromRGB(255, 0, 100), function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/gedeeldelicht/flawqs-auto-base-buy/refs/heads/main/Auto-baseV6.lua"))()
 end)
 
-createHeader("Player Visuals")
-createButton("ESP: Players (Box/Name)", Color3.fromRGB(200, 0, 0), function()
-    for _, p in pairs(Players:GetPlayers()) do
+createHeader("Visuals")
+createButton("Player ESP (No-Lag)", Color3.fromRGB(200, 0, 0), function()
+    for _, p in ipairs(Players:GetPlayers()) do
         if p ~= player and p.Character then
-            local h = Instance.new("Highlight", p.Character)
+            local h = p.Character:FindFirstChildOfClass("Highlight") or Instance.new("Highlight", p.Character)
             h.FillColor = Color3.fromRGB(255, 0, 0)
         end
     end
 end)
-createButton("Held Item ESP", Color3.fromRGB(150, 0, 0), function()
-    print("Held Item ESP Geactiveerd")
-end)
 
-createHeader("Movement & Rage")
-createButton("Speed & Jump Boost", Color3.fromRGB(0, 200, 100), function()
-    if player.Character and player.Character:FindFirstChild("Humanoid") then
-        player.Character.Humanoid.WalkSpeed = 100
-        player.Character.Humanoid.JumpPower = 100
+createHeader("Movement")
+createButton("Max Speed & Jump", Color3.fromRGB(0, 200, 100), function()
+    local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+    if hum then
+        hum.WalkSpeed = 100
+        hum.JumpPower = 100
     end
 end)
 
 local flying = false
 createButton("Toggle Fly", Color3.fromRGB(200, 150, 0), function()
     flying = not flying
-end)
-RunService.RenderStepped:Connect(function()
-    if flying and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        player.Character.HumanoidRootPart.Velocity = Vector3.new(0, 1, 0)
+    if not flying then 
+        player.Character.HumanoidRootPart.Velocity = Vector3.zero 
     end
 end)
 
-createHeader("Stealer & Combat")
-createButton("Auto Grab (Radius)", Color3.fromRGB(100, 0, 150), function()
-    print("Auto Grab Geactiveerd")
+RunService.Heartbeat:Connect(function()
+    if flying and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        player.Character.HumanoidRootPart.Velocity = Vector3.new(0, 2, 0) -- Stabiel zweven
+    end
 end)
 
-createButton("Auto Hit (Aura)", Color3.fromRGB(255, 165, 0), function()
+createHeader("Combat & Farming")
+createButton("Toggle Auto-Hit (Aura)", Color3.fromRGB(255, 165, 0), function()
     _G.AutoHit = not _G.AutoHit
     task.spawn(function()
-        while _G.AutoHit do
+        while _G.AutoHit and screenGui.Parent do
             local tool = player.Character and player.Character:FindFirstChildOfClass("Tool")
             if tool then tool:Activate() end
             task.wait(0.1)
@@ -143,23 +140,8 @@ createButton("Auto Hit (Aura)", Color3.fromRGB(255, 165, 0), function()
     end)
 end)
 
-createHeader("World & Base")
-createButton("Base Lock ESP", Color3.fromRGB(80, 0, 255), function()
-    for _, t in pairs(workspace.Tycoons:GetChildren()) do
-        local timer = t:FindFirstChild("LockTimer", true)
-        if timer then
-            local bg = Instance.new("BillboardGui", t)
-            bg.Size = UDim2.new(0,100,0,50)
-            bg.AlwaysOnTop = true
-            local tl = Instance.new("TextLabel", bg)
-            tl.Text = "Lock: " .. timer.Text
-            tl.TextColor3 = Color3.new(1,1,0)
-            tl.Parent = bg
-        end
-    end
-end)
-
-createButton("Fullbright / Time of Day", Color3.fromRGB(60, 60, 60), function()
+createHeader("Utilities")
+createButton("Fullbright", Color3.fromRGB(60, 60, 60), function()
     Lighting.Brightness = 2
     Lighting.ClockTime = 14
     Lighting.GlobalShadows = false
@@ -167,14 +149,16 @@ end)
 
 createButton("Bring Shop", Color3.fromRGB(80, 80, 80), function()
     local shop = workspace:FindFirstChild("Shop") or workspace:FindFirstChild("Store")
-    if shop and player.Character then
-        shop:MoveTo(player.Character.HumanoidRootPart.Position + Vector3.new(0, 0, 5))
+    if shop and player.Character:FindFirstChild("HumanoidRootPart") then
+        shop:MoveTo(player.Character.HumanoidRootPart.Position + Vector3.new(0, 0, 6))
     end
 end)
 
-createHeader("Panic")
+createHeader("System")
 createButton("DESTROY HUB", Color3.fromRGB(50, 50, 50), function()
+    _G.AutoHit = false
+    flying = false
     screenGui:Destroy()
 end)
 
-print("FlawQs Mobile Hub Geladen.")
+print("FlawQs V6 Geladen: Stabiel & No-Lag.")
